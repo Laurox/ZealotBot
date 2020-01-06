@@ -28,6 +28,7 @@ token = os.getenv('DISCORD_TOKEN')
 date = "11. Januar"
 time = "20:00"
 
+
 # loads the bot
 @client.event
 async def on_ready():
@@ -75,16 +76,29 @@ async def shutdown(ctx):
 # returns the user ping
 @client.command()
 async def announce(ctx):
-    """Kündigt einen Dragon-Fights"""
-    message = await ctx.send(f"@everyone: Der nächste Dragon-Raid findet am {date} um {time} statt! Durch drücken auf \U00002705 oder \U0000274C unter der Nachricht, meldest du dich an oder ab.\nWenn ihr Augen habt reagiert bitte mit der entsprechenden Zahl, oder mit dem Stern, wenn ihr mehr als 8 setzten wollt")
+    """Kündigt einen Dragon-Fight an"""
+    message = await ctx.send(
+        f"@everyone: Der nächste Dragon-Raid findet am {date} um {time} statt! Durch drücken auf \U00002705 oder \U0000274C unter der Nachricht, meldest du dich an oder ab.\nWenn ihr Augen habt reagiert bitte mit der entsprechenden Zahl oder mit dem Stern, wenn ihr mehr als 8 setzten wollt"
+    )
+
     emojis = [
         # ACCEPT
         '\U00002705',
         # DECLINE
         '\U0000274C',
         # NUMS
-        '1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣',
+        '\U00000031\U0000FE0F\U000020E3',
+        '\U00000032\U0000FE0F\U000020E3',
+        '\U00000033\U0000FE0F\U000020E3',
+        '\U00000034\U0000FE0F\U000020E3',
+        '\U00000035\U0000FE0F\U000020E3',
+        '\U00000036\U0000FE0F\U000020E3',
+        '\U00000037\U0000FE0F\U000020E3',
+        '\U00000038\U0000FE0F\U000020E3',
+        # STAR
+        '\U0000002A\U0000FE0F\U000020E3'
     ]
+
     for emoji in emojis:
         await message.add_reaction(emoji)
 
@@ -105,13 +119,15 @@ async def on_raw_reaction_add(payload):
         return
     if payload.user_id == client.user.id:
         return
+
     channel = await client.fetch_channel(payload.channel_id)
     message = await channel.fetch_message(payload.message_id)
+
     if message.author != client.user:
         return
-    if payload.emoji.name == '\U00002705':
-        user = await client.fetch_user(payload.user_id)
 
+    user = await client.fetch_user(payload.user_id)
+    if payload.emoji.name == '\U00002705':
         with open(f"./data/registered.json", "r") as file:
             users = json.load(file)
 
@@ -121,10 +137,7 @@ async def on_raw_reaction_add(payload):
             json.dump(users, file, indent=4)
 
         await user.send(content=f"Du hast dich erfolgreich für den Dragon-Raid am {date} um {time} angemeldet!")
-        await user.send(content=f"Du kannst nun Augen mit `!add <IGN> <Anzahl>` eintragen.")
-    if payload.emoji.name == '\U0000274C':
-        user = await client.fetch_user(payload.user_id)
-
+    elif payload.emoji.name == '\U0000274C':
         with open(f"./data/declined.json", "r") as file:
             users = json.load(file)
 
@@ -134,6 +147,41 @@ async def on_raw_reaction_add(payload):
             json.dump(users, file, indent=4)
 
         await user.send(content=f"Du hast dich erfolgreich für den Dragon-Raid am {date} um {time} abgemeldet!")
+    elif payload.emoji.name == '\U00000031\U0000FE0F\U000020E3':
+        await add_eyes(1, user)
+    elif payload.emoji.name == '\U00000032\U0000FE0F\U000020E3':
+        await add_eyes(2, user)
+    elif payload.emoji.name == '\U00000033\U0000FE0F\U000020E3':
+        await add_eyes(3, user)
+    elif payload.emoji.name == '\U00000034\U0000FE0F\U000020E3':
+        await add_eyes(4, user)
+    elif payload.emoji.name == '\U00000035\U0000FE0F\U000020E3':
+        await add_eyes(5, user)
+    elif payload.emoji.name == '\U00000036\U0000FE0F\U000020E3':
+        await add_eyes(6, user)
+    elif payload.emoji.name == '\U00000037\U0000FE0F\U000020E3':
+        await add_eyes(7, user)
+    elif payload.emoji.name == '\U00000038\U0000FE0F\U000020E3':
+        await add_eyes(8, user)
+    elif payload.emoji.name == '\U0000002A\U0000FE0F\U000020E3':
+        await add_eyes("+", user)
+
+
+async def add_eyes(num, user):
+    with open(f"./data/registered.json", "r") as file:
+        users = json.load(file)
+
+    if str(user.id) not in users:
+        await user.send(content=f"Du musst dich dafür zuerst registrieren! Reagiere dazu auf \U00002705")
+        return False
+    else:
+        users[str(user.id)] = str([users[str(user.id)], num])
+
+        with open(f"./data/registered.json", "w") as file:
+            json.dump(users, file, indent=4)
+
+        await user.send(content=f"Du hast erfolgreich {num} Auge eingetragen.")
+    return True
 
 
 # loads all modules at start
