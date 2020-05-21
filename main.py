@@ -8,7 +8,7 @@ import json
 
 
 def get_prefix(client, message):
-    return "!"
+    return "z "
 
 
 def botowner(ctx):
@@ -72,6 +72,18 @@ async def shutdown(ctx):
     await ctx.send("Heruntergefahren")
     await client.logout()
 
+
+@client.command()
+@commands.check(botowner)
+async def addroles(ctx):
+    members = ctx.message.guild.members
+    for member in members:
+        role = discord.utils.get(ctx.message.guild.roles, id=688166848721715263)
+        await member.add_roles(role, reason=None, atomic=True)
+        role = discord.utils.get(ctx.message.guild.roles, id=697084419009282140)
+        await member.add_roles(role, reason=None, atomic=True)
+        role = discord.utils.get(ctx.message.guild.roles, id=697084208858005544)
+        await member.remove_roles(role, reason=None, atomic=True)
 
 # returns the user ping
 @client.command()
