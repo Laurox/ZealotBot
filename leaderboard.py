@@ -1,9 +1,8 @@
 import sqlite3
+from os import path
 
-conn = sqlite3.connect('./db/user_data.db')
-
-c = conn.cursor()
-
-c.execute("CREATE TABLE user_info(discordtag TEXT, uuid TEXT)")
-
-conn.commit()
+if not path.exists('./db/mtg.db'):
+    conn = sqlite3.connect('./db/mtg.db')
+    c = conn.cursor()
+    c.execute("CREATE TABLE user_info(discordtag TEXT, uuid TEXT)")
+    conn.commit()

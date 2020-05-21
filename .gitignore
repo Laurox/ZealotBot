@@ -204,9 +204,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-    © 2020 GitHub, Inc.
-    Terms
-    Privacy
-    Security
-    Status
-    Help
+# DataBases
+*.db
+
+# Test File for Python Code
+Test.py
+test.py

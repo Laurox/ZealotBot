@@ -22,8 +22,14 @@ class Splash(commands.Cog):
         self.fishing = 0
         self.early_winner = None
 
-    channel_id = None
-    role_id = None
+        self.channel_id = None
+        self.role_id = None
+
+    def use_default_channel(self):
+        return self.channel_id is None
+
+    def use_default_role(self):
+        return self.role_id is None
 
     @commands.command()
     @commands.has_role('Splasher')
@@ -41,10 +47,17 @@ class Splash(commands.Cog):
         # Changes Active to True and process request
         self.active = True
 
-        # todo add channel support
         # using channel ID and default Channel
-        channel = self.bot.get_channel(default_id)
-        self.active_message = await channel.send("<@&697074938820952104> | Ein neuer Skill-XP Splash wurde angekündigt!", embed=embed)
+        if self.use_default_channel():
+            channel = self.bot.get_channel(default_id)
+        else:
+            channel = self.bot.get_channel(self.channel_id)
+        # using role ID and role Ping
+        if self.use_default_role():
+            role_id = 697074938820952104
+        else:
+            role_id = self.role_id
+        self.active_message = await channel.send(f"<@&{role_id}> | Ein neuer Skill-XP Splash wurde angekündigt!", embed=embed)
         await self.active_message.add_reaction('🌲')
         await self.active_message.add_reaction('🌾')
         await self.active_message.add_reaction('🗡️')
@@ -147,14 +160,16 @@ class Splash(commands.Cog):
     @commands.has_role('Admin')
     async def set_splash_channel(self, ctx):
         """Setzt den Channel für RQ"""
-        # todo add channel support
+        self.channel_id = ctx.message.channel.id
+        await ctx.send("Channel für den Splash Ping wurde aktualisiert")
         return
 
     @commands.command()
     @commands.has_role('Admin')
     async def set_splash_ping(self, ctx, role: discord.Role):
         """Setzt die Role für RQ"""
-        # todo add channel support
+        self.role_id = role.id
+        await ctx.send("Rolle für den Splash Ping wurde aktualisiert")
         return
 
 

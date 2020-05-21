@@ -1,5 +1,5 @@
 from discord.ext import commands
-from uuid_util import get_uuid_from_name
+from util.uuid_util import get_uuid_from_name
 import json
 import discord
 import requests
