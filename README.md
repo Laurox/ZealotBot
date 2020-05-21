@@ -1,3 +1,11 @@
 # ZealotBot
 
-a simpel python based discord bot for managing dragon-raids in Hypixel Skyblock
+Multi-Purpose Bot for Hypixel Skyblock Discord
+
+## Commands
+
+- Reaction Roles
+- Splash Announces
+- Guild Leaderboards
+
+- Planned More (!)
