@@ -1,10 +1,7 @@
 from discord.ext import commands
 import discord
-import json
-
-# basis structure
-data = {}
-data['reactionroles'] = []
+from os import path
+import sqlite3
 
 
 class ReactionRoles(commands.Cog):
@@ -51,37 +48,21 @@ class ReactionRoles(commands.Cog):
         if member.id in self.active:
             if self.active[member.id] is None:
                 # delete reaction role
-                with open('data/reactionroles.json', 'r') as file:
-                    data = json.load(file)
-
-                c = 0
-                for _ in data['reactionroles']:
-                    message_id = data['reactionroles'][c]['data']['message_id']
-                    emoji = data['reactionroles'][c]['data']['emoji']
-                    if message_id == payload.message_id and emoji == payload.emoji.name:
-                        data['reactionroles'].pop(c)
-                        break
-                    c += 1
-
-                with open('data/reactionroles.json', 'w') as file:
-                    json.dump(data, file, indent=4)
+                basepath = path.dirname(__file__)
+                filepath = path.realpath(path.join(basepath, "..", "db", "mtg.db"))
+                with sqlite3.Connection(filepath) as db:
+                    c = db.cursor()
+                    c.execute("DELETE FROM reaction_roles WHERE message_id = ? AND emoji = ?")
+                    db.commit()
                 await message.remove_reaction(payload.emoji, guild.me)
             else:
-                # add reaction role
-                with open('data/reactionroles.json', 'r') as file:
-                    data = json.load(file)
-
-                data['reactionroles'].append({
-                    'id': len(data['reactionroles']),
-                    'data': {
-                        'message_id': payload.message_id,
-                        'emoji': payload.emoji.name,
-                        'role': self.active.get(member.id)
-                    }
-                })
-
-                with open('data/reactionroles.json', 'w') as file:
-                    json.dump(data, file, indent=4)
+                basepath = path.dirname(__file__)
+                filepath = path.realpath(path.join(basepath, "..", "db", "mtg.db"))
+                with sqlite3.Connection(filepath) as db:
+                    c = db.cursor()
+                    c.execute("INSERT INTO reaction_roles(message_id, emoji, role) VALUES (?, ?, ?)",
+                              (message.id, str(payload.emoji), self.active[member.id]))
+                    db.commit()
                 await message.add_reaction(payload.emoji)
 
             await message.remove_reaction(payload.emoji, member)
@@ -89,20 +70,22 @@ class ReactionRoles(commands.Cog):
             return
 
         # give player roles
-        with open('data/reactionroles.json', 'r') as file:
-            data = json.load(file)
+        basepath = path.dirname(__file__)
+        filepath = path.realpath(path.join(basepath, "..", "db", "mtg.db"))
+        with sqlite3.Connection(filepath) as db:
+            c = db.cursor()
+            result = c.execute("SELECT role FROM reaction_roles WHERE message_id = ? AND emoji = ?",
+                               (message.id, str(payload.emoji))).fetchall()
+            db.commit()
 
-            c = 0
-            for _ in data['reactionroles']:
-                message_id = data['reactionroles'][c]['data']['message_id']
-                emoji = data['reactionroles'][c]['data']['emoji']
-                if message_id == payload.message_id and emoji == payload.emoji.name:
-                    role_id = data['reactionroles'][c]['data']['role']
-                    role = discord.utils.get(guild.roles, id=role_id)
-                    await member.add_roles(role)
-                    await message.remove_reaction(payload.emoji, member)
-                    break
-                c += 1
+            if len(result) == 0:
+                return
+
+            for entry in result:
+                role = discord.utils.get(guild.roles, id=int(entry[0]))
+                await member.add_roles(role)
+
+            await message.remove_reaction(payload.emoji, member)
 
 
 def setup(bot):

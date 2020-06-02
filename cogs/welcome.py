@@ -9,8 +9,12 @@ class Welcome(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        role = discord.utils.get(member.server.roles, id="711323499117150319")
-        await self.bot.add_roles(member, role)
+        neuzugang = discord.utils.get(member.guild.roles, id=711323499117150319)
+        spacer_1 = discord.utils.get(member.guild.roles, id=688166848721715263)
+        spacer_2 = discord.utils.get(member.guild.roles, id=697084419009282140)
+        await member.add_roles(neuzugang)
+        await member.add_roles(spacer_1)
+        await member.add_roles(spacer_2)
 
 
 def setup(bot):

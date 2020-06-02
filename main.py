@@ -60,6 +60,7 @@ async def unload(ctx, extension):
 @commands.is_owner()
 async def shutdown(ctx):
     """Shutdowns the Bot"""
+    # subprocess.call(['./shell/stop_updater.sh'])
     await ctx.message.add_reaction('\U00002705')
     await ctx.send("Heruntergefahren")
     await client.logout()
@@ -79,6 +80,11 @@ for filename in os.listdir('./cogs'):
     else:
         pass
 
+# print("Starting Updater in a 2nd Screen Session")
+# subprocess.call(['./shell/start_updater.sh'])
+# print('Waiting 30 Seconds...')
+# time.sleep(30)
 
 print(f"loading bot using token: {token}")
+
 client.run(token)
